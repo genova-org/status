@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<title>Статус</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ccircle cx='8' cy='8' r='6' fill='%230ca30c'/%3E%3C/svg%3E">
+<style>
+  :root {
+    color-scheme: light;
+    --bg: #fafaf8; --ink: #111111; --muted: #5f5e5a; --line: #e4e3dc;
+    --ok: #0ca30c; --warn: #b77a00; --down: #d03b3b; --none: #dcdbd4;
+    --tip-bg: #111111; --tip-ink: #fafaf8;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      color-scheme: dark;
+      --bg: #141414; --ink: #eeeeee; --muted: #a3a29c; --line: #2c2c2a;
+      --ok: #0ca30c; --warn: #fab219; --down: #d03b3b; --none: #363634;
+      --tip-bg: #eeeeee; --tip-ink: #141414;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink);
+         font: 16px/1.45 -apple-system, system-ui, "Segoe UI", Roboto, sans-serif; }
+  main { max-width: 760px; margin: 0 auto; padding: 40px 16px 56px; }
+  header { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin-bottom: 24px; }
+  h1 { font-size: 24px; margin: 0; }
+  .muted { color: var(--muted); font-size: 14px; }
+
+  .overall { display: flex; align-items: center; gap: 12px; padding: 18px 20px; border-radius: 12px;
+             border: 1px solid var(--line); font-size: 19px; font-weight: 600; margin-bottom: 32px; }
+  .overall .ico { width: 24px; height: 24px; flex: none; }
+
+  .ico { display: inline-block; width: 16px; height: 16px; flex: none; vertical-align: -3px; }
+  .ok .ico, .ico.ok { color: var(--ok); }
+  .warn .ico, .ico.warn { color: var(--warn); }
+  .down .ico, .ico.down { color: var(--down); }
+  .none .ico, .ico.none { color: var(--muted); }
+
+  .list { border: 1px solid var(--line); border-radius: 12px; }
+  .comp { padding: 18px 20px; }
+  .comp + .comp { border-top: 1px solid var(--line); }
+  .row { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+  .name { font-weight: 600; }
+  .state { display: inline-flex; align-items: center; gap: 6px; font-size: 15px; }
+
+  .bars { display: flex; gap: 2px; height: 32px; }
+  .bars span { flex: 1 1 0; min-width: 0; border-radius: 2px; background: var(--none); cursor: default; }
+  .bars span.ok { background: var(--ok); }
+  .bars span.warn { background: var(--warn); }
+  .bars span.down { background: var(--down); }
+  .bars span:focus-visible { outline: 2px solid var(--ink); outline-offset: 1px; }
+  .scale { display: flex; justify-content: space-between; gap: 8px; margin-top: 8px; }
+  .d30 { display: none; }
+  @media (max-width: 639px) {
+    .bars span:nth-child(-n+60) { display: none; }
+    .d90 { display: none; }
+    .d30 { display: inline; }
+    .overall { font-size: 17px; }
+  }
+
+  h2 { font-size: 19px; margin: 40px 0 12px; }
+  .inc { padding: 12px 0; border-top: 1px solid var(--line); display: flex; gap: 10px; align-items: flex-start; }
+  .inc:last-child { border-bottom: 1px solid var(--line); }
+  .inc .ico { margin-top: 3px; }
+  .inc b { font-weight: 600; }
+
+  #tip { position: fixed; z-index: 10; pointer-events: none; padding: 6px 10px; border-radius: 8px;
+         background: var(--tip-bg); color: var(--tip-ink); font-size: 13px; white-space: nowrap; display: none; }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-ok" viewBox="0 0 16 16"><circle cx="8" cy="8" r="8" fill="currentColor"/><path d="M4.5 8.3l2.3 2.3 4.7-4.9" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-warn" viewBox="0 0 16 16"><circle cx="8" cy="8" r="8" fill="currentColor"/><path d="M8 4v5" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/><circle cx="8" cy="11.8" r="1.1" fill="#fff"/></symbol>
+  <symbol id="i-down" viewBox="0 0 16 16"><circle cx="8" cy="8" r="8" fill="currentColor"/><path d="M5.3 5.3l5.4 5.4M10.7 5.3l-5.4 5.4" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/></symbol>
+  <symbol id="i-none" viewBox="0 0 16 16"><circle cx="8" cy="8" r="7" fill="none" stroke="currentColor" stroke-width="2"/><path d="M5 8h6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+</svg>
+<main>
+  <header>
+    <h1>Статус</h1>
+    <span class="muted" id="updated"></span>
+  </header>
+  <div class="overall none" id="overall"><svg class="ico"><use href="#i-none"/></svg><span>Загрузка…</span></div>
+  <div class="list" id="list"></div>
+  <h2>Сбои</h2>
+  <div id="incidents"></div>
+</main>
+<div id="tip" role="tooltip"></div>
+<script>
+(function () {
+  var STALE_MIN = 30;
+  var DAYS = 90;
+  var LABEL = { ok: 'Работает', warn: 'Частичный сбой', down: 'Недоступно', none: 'Нет данных' };
+  var OVERALL = { ok: 'Всё работает', warn: 'Частичный сбой', down: 'Сбой', none: 'Нет свежих данных' };
+  var tz = 'Europe/Moscow';
+  var fDay = new Intl.DateTimeFormat('ru-RU', { timeZone: tz, day: 'numeric', month: 'short' });
+  var fTime = new Intl.DateTimeFormat('ru-RU', { timeZone: tz, hour: '2-digit', minute: '2-digit' });
+  var fDayTime = new Intl.DateTimeFormat('ru-RU', { timeZone: tz, day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+  var fKey = new Intl.DateTimeFormat('en-CA', { timeZone: tz, year: 'numeric', month: '2-digit', day: '2-digit' });
+  var $ = function (id) { return document.getElementById(id); };
+
+  function icon(s) { return '<svg class="ico ' + s + '"><use href="#i-' + s + '"/></svg>'; }
+  function esc(t) { return String(t).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+  function pct(x) { return (Math.floor(x * 10000) / 100).toFixed(2).replace('.', ',') + ' %'; }
+  function dayColor(up, total) {
+    if (!total) return 'none';
+    var r = up / total;
+    return r >= 0.995 ? 'ok' : r >= 0.95 ? 'warn' : 'down';
+  }
+  function ago(ms) {
+    var m = Math.round(ms / 60000);
+    if (m < 1) return 'только что';
+    if (m < 60) return m + ' мин назад';
+    var h = Math.floor(m / 60);
+    return h < 24 ? h + ' ч назад' : fDayTime.format(new Date(Date.now() - ms));
+  }
+  function dur(ms) {
+    var m = Math.max(1, Math.round(ms / 60000));
+    if (m < 60) return m + ' мин';
+    var h = Math.floor(m / 60), r = m % 60;
+    return h + ' ч' + (r ? ' ' + r + ' мин' : '');
+  }
+  function lastDays(n) {
+    var out = [], now = Date.now();
+    for (var i = n - 1; i >= 0; i--) out.push(fKey.format(new Date(now - i * 86400000)));
+    return out;
+  }
+
+  function render(data) {
+    var updated = new Date(data.updated);
+    var stale = (Date.now() - updated) / 60000 > STALE_MIN;
+    $('updated').textContent = 'Проверено ' + ago(Date.now() - updated);
+
+    var worst = 'ok';
+    data.components.forEach(function (c) {
+      if (c.status === 'down') worst = 'down';
+      else if (c.status === 'warn' && worst !== 'down') worst = 'warn';
+    });
+    if (stale) worst = 'none';
+    var o = $('overall');
+    o.className = 'overall ' + worst;
+    o.innerHTML = icon(worst) + '<span>' + OVERALL[worst] + '</span>';
+
+    var keys = lastDays(DAYS);
+    var html = '';
+    data.components.forEach(function (c) {
+      var hist = {};
+      (data.history[c.id] || []).forEach(function (d) { hist[d[0]] = d; });
+      var bars = '', up90 = 0, t90 = 0, up30 = 0, t30 = 0;
+      keys.forEach(function (k, i) {
+        var d = hist[k], up = d ? d[1] : 0, total = d ? d[2] : 0;
+        up90 += up; t90 += total;
+        if (i >= DAYS - 30) { up30 += up; t30 += total; }
+        var label = total ? pct(up / total) : LABEL.none;
+        bars += '<span class="' + dayColor(up, total) + '" tabindex="0" data-tip="' +
+                esc(fDay.format(new Date(k + 'T12:00:00+03:00')) + ' · ' + label) + '"></span>';
+      });
+      var st = stale ? 'none' : c.status;
+      html += '<section class="comp">' +
+        '<div class="row"><span class="name">' + esc(c.name) + '</span>' +
+        '<span class="state ' + st + '">' + icon(st) + LABEL[st] + '</span></div>' +
+        '<div class="bars" aria-label="' + esc(c.name) + '">' + bars + '</div>' +
+        '<div class="scale muted"><span class="d90">90 дней назад</span><span class="d30">30 дней назад</span>' +
+        '<span class="d90">' + (t90 ? pct(up90 / t90) : '') + '</span><span class="d30">' + (t30 ? pct(up30 / t30) : '') + '</span>' +
+        '<span>Сегодня</span></div></section>';
+    });
+    $('list').innerHTML = html;
+
+    var inc = (data.incidents || []).slice().sort(function (a, b) { return b.start < a.start ? -1 : 1; });
+    if (!inc.length) {
+      $('incidents').innerHTML = '<p class="muted">За 90 дней сбоев не было</p>';
+    } else {
+      $('incidents').innerHTML = inc.map(function (i) {
+        var s = new Date(i.start), e = i.end ? new Date(i.end) : null;
+        var when = fDayTime.format(s) + (e ? '–' + (fKey.format(s) === fKey.format(e) ? fTime.format(e) : fDayTime.format(e)) : '');
+        var tail = e ? dur(e - s) : 'продолжается';
+        return '<div class="inc">' + icon(i.level) + '<div><b>' + esc(i.name) + '</b> · ' + LABEL[i.level].toLowerCase() +
+               '<div class="muted">' + when + ' МСК · ' + tail + '</div></div></div>';
+      }).join('');
+    }
+  }
+
+  function load() {
+    fetch('status.json?t=' + Date.now(), { cache: 'no-store' })
+      .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+      .then(render)
+      .catch(function () {
+        var o = $('overall');
+        o.className = 'overall none';
+        o.innerHTML = icon('none') + '<span>' + OVERALL.none + '</span>';
+      });
+  }
+
+  var tip = $('tip');
+  function showTip(el) {
+    var t = el && el.getAttribute('data-tip');
+    if (!t) { tip.style.display = 'none'; return; }
+    tip.textContent = t;
+    tip.style.display = 'block';
+    var r = el.getBoundingClientRect(), w = tip.offsetWidth;
+    var x = Math.min(Math.max(8, r.left + r.width / 2 - w / 2), window.innerWidth - w - 8);
+    tip.style.left = x + 'px';
+    tip.style.top = (r.top - tip.offsetHeight - 8) + 'px';
+  }
+  document.addEventListener('mouseover', function (e) { showTip(e.target.closest && e.target.closest('[data-tip]')); });
+  document.addEventListener('focusin', function (e) { showTip(e.target.closest && e.target.closest('[data-tip]')); });
+  document.addEventListener('click', function (e) { showTip(e.target.closest && e.target.closest('[data-tip]')); });
+  window.addEventListener('scroll', function () { tip.style.display = 'none'; }, { passive: true });
+
+  load();
+  setInterval(load, 60000);
+})();
+</script>
+</body>
+</html>
