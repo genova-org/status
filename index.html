@@ -172,7 +172,12 @@
 
     var inc = (data.incidents || []).slice().sort(function (a, b) { return b.start < a.start ? -1 : 1; });
     if (!inc.length) {
-      $('incidents').innerHTML = '<p class="muted">За 90 дней сбоев не было</p>';
+      var first = null;
+      Object.keys(data.history).forEach(function (id) {
+        (data.history[id] || []).forEach(function (d) { if (d[2] && (!first || d[0] < first)) first = d[0]; });
+      });
+      var since = first && first > keys[0] ? 'с ' + fDay.format(new Date(first + 'T12:00:00+03:00')) : 'за 90 дней';
+      $('incidents').innerHTML = '<p class="muted">Сбоев не было ' + since + '</p>';
     } else {
       $('incidents').innerHTML = inc.map(function (i) {
         var s = new Date(i.start), e = i.end ? new Date(i.end) : null;
